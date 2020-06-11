@@ -2516,6 +2516,15 @@ void convert_s16_f(short* input, float* output, int input_size)
     for(int i=0;i<input_size;i++) output[i]=(float)input[i]/SHRT_MAX; //@convert_s16_f
 }
 
+void convert_s16_big_endian_f(short* input, float* output, int input_size)
+{
+    for(int i=0;i<input_size;i++) {
+        unsigned short ushort = input[i];
+        short sint = (short) ((ushort & 0xff) << 8) | ((ushort >> 8) & 0xff);
+        output[i]=(float)sint/SHRT_MAX; //@convert_s16_big_endian_f
+    }
+}
+
 void convert_f_u8(float* input, unsigned char* output, int input_size)
 {
     for(int i=0;i<input_size;i++) output[i]=input[i]*UCHAR_MAX*0.5+128; //@convert_f_u8
@@ -2536,6 +2545,15 @@ void convert_f_s16(float* input, short* output, int input_size)
         if(input[i]<-1.0) input[i]=-1.0;
     }*/
     for(int i=0;i<input_size;i++) output[i]=input[i]*SHRT_MAX; //@convert_f_s16
+}
+
+void convert_f_s16_big_endian(float* input, short* output, int input_size)
+{
+    for(int i=0;i<input_size;i++) {
+        unsigned short ushort = (unsigned short) (short) (input[i]*SHRT_MAX);
+        short sint = (short) ((ushort & 0xff) << 8) | ((ushort >> 8) & 0xff);
+        output[i]=sint; //@convert_f_s16_big_endian
+    }
 }
 
 void convert_i16_f(short* input, float* output, int input_size) { convert_s16_f(input, output, input_size); }

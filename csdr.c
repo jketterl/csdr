@@ -64,10 +64,11 @@ char usage[]=
 "    convert_f_u8\n"
 "    convert_s8_f\n"
 "    convert_f_s8\n"
-"    convert_f_s16\n"
-"    convert_s16_f\n"
+"    convert_f_s16 [--bigendian]\n"
+"    convert_s16_f [--bigendian]\n"
 "    convert_f_s24 [--bigendian]\n"
 "    convert_s24_f [--bigendian]\n"
+"    iq_swap_ff\n"
 "    realpart_cf\n"
 "    clipdetect_ff\n"
 "    limit_ff [max_amplitude]\n"
@@ -162,7 +163,7 @@ char usage[]=
 "    bfsk_demod_cf <spacing> <filter_length>\n"
 "    normalized_timing_variance_u32_f <samples_per_symbol> <initial_sample_offset> [--debug]\n"
 "    ?<search_the_function_list>\n"
-"    ??<jump_to_function_docs_on_github>\n"
+"    \?\?<jump_to_function_docs_on_github>\n"
 "    =<evaluate_python_expression>\n"
 "    shift_addfast_cc <rate>   #only if system supports NEON \n"
 "    shift_unroll_cc <rate>\n"
@@ -584,26 +585,50 @@ int main(int argc, char *argv[])
     }
     if((!strcmp(argv[1],"convert_f_i16")) || (!strcmp(argv[1],"convert_f_s16")))
     {
+        int bigendian = (argc>2) && (!strcmp(argv[2],"--bigendian"));
         if(!sendbufsize(initialize_buffers())) return -2;
-        for(;;)
-        {
-            FEOF_CHECK;
-            FREAD_R;
-            convert_f_i16(input_buffer, buffer_i16, the_bufsize);
-            fwrite(buffer_i16, sizeof(short), the_bufsize, stdout);
-            TRY_YIELD;
+        if (bigendian) {
+            for(;;)
+            {
+                FEOF_CHECK;
+                FREAD_R;
+                convert_f_s16_big_endian(input_buffer, buffer_i16, the_bufsize);
+                fwrite(buffer_i16, sizeof(short), the_bufsize, stdout);
+                TRY_YIELD;
+            }
+        } else {
+            for(;;)
+            {
+                FEOF_CHECK;
+                FREAD_R;
+                convert_f_i16(input_buffer, buffer_i16, the_bufsize);
+                fwrite(buffer_i16, sizeof(short), the_bufsize, stdout);
+                TRY_YIELD;
+            }
         }
     }
     if((!strcmp(argv[1],"convert_i16_f")) || (!strcmp(argv[1],"convert_s16_f")))
     {
+        int bigendian = (argc>2) && (!strcmp(argv[2],"--bigendian"));
         if(!sendbufsize(initialize_buffers())) return -2;
-        for(;;)
-        {
-            FEOF_CHECK;
-            fread(buffer_i16, sizeof(short), the_bufsize, stdin);
-            convert_i16_f(buffer_i16, output_buffer, the_bufsize);
-            FWRITE_R;
-            TRY_YIELD;
+        if (bigendian) {
+            for(;;)
+            {
+                FEOF_CHECK;
+                fread(buffer_i16, sizeof(short), the_bufsize, stdin);
+                convert_s16_big_endian_f(buffer_i16, output_buffer, the_bufsize);
+                FWRITE_R;
+                TRY_YIELD;
+            }
+        } else {
+            for(;;)
+            {
+                FEOF_CHECK;
+                fread(buffer_i16, sizeof(short), the_bufsize, stdin);
+                convert_i16_f(buffer_i16, output_buffer, the_bufsize);
+                FWRITE_R;
+                TRY_YIELD;
+            }
         }
     }
     if(!strcmp(argv[1],"convert_f_s24"))
@@ -634,6 +659,19 @@ int main(int argc, char *argv[])
             TRY_YIELD;
         }
     }
+	if(!strcmp(argv[1],"iq_swap_ff"))
+	{
+		double t;
+        if(!sendbufsize(initialize_buffers())) return -2;
+		for(;;)
+		{
+			FEOF_CHECK;
+			FREAD_C;
+			for(int i=0;i<the_bufsize;i++) { t = iof(input_buffer, i); iof(input_buffer, i) = qof(input_buffer, i); qof(input_buffer, i) = t; }
+			fwrite(input_buffer, sizeof(float)*2, the_bufsize, stdout);
+            TRY_YIELD;
+		}
+	}
     if(!strcmp(argv[1],"realpart_cf"))
     {
         if(!sendbufsize(initialize_buffers())) return -2;

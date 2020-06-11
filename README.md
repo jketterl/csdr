@@ -146,8 +146,8 @@ The following commands are available:
 - `csdr convert_f_u8`
 - `csdr convert_s8_f`
 - `csdr convert_f_s8`
-- `csdr convert_s16_f`
-- `csdr convert_f_s16`
+- `csdr convert_s16_f [--bigendian]`
+- `csdr convert_f_s16 [--bigendian]`
 - `csdr convert_s24_f [--bigendian]`
 - `csdr convert_f_s24 [--bigendian]`
 
@@ -203,6 +203,16 @@ Syntax:
     csdr gain_ff <gain>
 
 It multiplies all samples by `gain`.
+
+----
+
+### [iq_swap_ff](#iq_swap_ff)
+
+Syntax:
+
+    csdr iq_swap_ff
+
+Swaps the I and Q values of each sample.
 
 ----
 
@@ -585,7 +595,7 @@ Syntax:
 
 It can decimate by a floating point ratio.
 
-It uses Lagrance interpolation, where `num_poly_points` (12 by default) input samples are taken into consideration while calculating one output sample. 
+It uses Lagrange interpolation, where `num_poly_points` (12 by default) input samples are taken into consideration while calculating one output sample. 
 
 It can filter the signal with an anti-aliasing FIR filter before applying the Lagrange interpolation. This filter is inactive by default, but can be activated by:
 
@@ -960,7 +970,7 @@ Syntax:
 
     csdr add_n_zero_samples_at_beginning_f <n_zero_samples> 
 
-When the function is executed, it furst writes `<n_zero_samples>` 32-bit floating point zeros at the output, after that it just clones the input at the output. 
+When the function is executed, it first writes `<n_zero_samples>` 32-bit floating point zeros at the output, after that it just clones the input at the output. 
 
 ----
 
