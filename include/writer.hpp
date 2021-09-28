@@ -23,6 +23,7 @@ along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <cstdlib>
 #include <mutex>
+#include <pulse/simple.h>
 
 namespace Csdr {
 
@@ -66,6 +67,22 @@ namespace Csdr {
         private:
             size_t buffer_size;
             T* data;
+    };
+
+    template <typename T>
+    class PulseAudioWriter: public Writer<T> {
+        public:
+            PulseAudioWriter(unsigned int samplerate, size_t buffer_size = 10240,
+                             const char* app_name = nullptr,
+                             const char* stream_name = nullptr);
+            ~PulseAudioWriter();
+            size_t writeable() override;
+            T* getWritePointer() override;
+            void advance(size_t how_much) override;
+        private:
+            size_t buffer_size;
+            T* buffer;
+            pa_simple *pa;
     };
 
 }

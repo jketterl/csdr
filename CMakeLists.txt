@@ -28,6 +28,8 @@ include(cmake/DetectIfunc.cmake)
 
 pkg_check_modules(SAMPLERATE REQUIRED samplerate)
 
+pkg_check_modules(PULSEAUDIO REQUIRED libpulse-simple)
+
 if(NOT DEFINED CSDR_GPL)
     set(CSDR_GPL true)
 endif()

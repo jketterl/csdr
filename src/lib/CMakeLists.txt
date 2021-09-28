@@ -2,7 +2,7 @@ add_library(csdr++ SHARED module.cpp ringbuffer.cpp writer.cpp agc.cpp fmdemod.c
 set_target_properties(csdr++ PROPERTIES VERSION ${PROJECT_VERSION})
 file(GLOB LIBCSDR_HEADERS "${PROJECT_SOURCE_DIR}/include/*.hpp")
 set_target_properties(csdr++ PROPERTIES PUBLIC_HEADER "${LIBCSDR_HEADERS}")
-target_link_libraries(csdr++ ${FFTW3_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${SAMPLERATE_LIBRARIES})
+target_link_libraries(csdr++ ${FFTW3_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${SAMPLERATE_LIBRARIES} ${PULSEAUDIO_LIBRARIES})
 target_compile_definitions(csdr++ PRIVATE "-D_GNU_SOURCE")
 
 if (HAS_IFUNC)
