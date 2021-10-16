@@ -37,6 +37,7 @@ namespace Csdr {
         private:
             unsigned int fftSize;
             unsigned int everyNSamples;
+            unsigned int skipped = 0;
             PrecalculatedWindow* window;
             fftwf_plan plan;
             complex<float>* windowed;

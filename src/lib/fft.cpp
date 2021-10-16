@@ -39,20 +39,40 @@ Fft::~Fft() {
 
 bool Fft::canProcess() {
     std::lock_guard<std::mutex> lock(this->processMutex);
-    return std::min(reader->available(), writer->writeable()) > std::max(fftSize, everyNSamples);
+    return std::min(reader->available(), writer->writeable()) > fftSize;
 }
 
 void Fft::process() {
     std::lock_guard<std::mutex> lock(processMutex);
-    if (window != nullptr) {
-        window->apply(reader->getReadPointer(), windowed, fftSize);
+    size_t available = reader->available();
+    if (skipped + available >= everyNSamples) {
+        // start of next fft is in range
+        if (everyNSamples > skipped) {
+            // move forward to the beginning (align)
+            unsigned int toSkip = everyNSamples - skipped;
+            reader->advance(toSkip);
+            skipped += toSkip;
+            available -= toSkip;
+        }
+
+        // do we still have enough data for an fft now?
+        if (available >= fftSize) {
+            if (window != nullptr) {
+                window->apply(reader->getReadPointer(), windowed, fftSize);
+            } else {
+                memcpy(windowed, reader->getReadPointer(), fftSize);
+            }
+            fftwf_execute(plan);
+            std::memcpy(writer->getWritePointer(), output_buffer, sizeof(complex<float>) * fftSize);
+            writer->advance(fftSize);
+
+            skipped = 0;
+        }
     } else {
-        memcpy(windowed, reader->getReadPointer(), fftSize);
+        // drop data
+        reader->advance(available);
+        skipped += available;
     }
-    fftwf_execute(plan);
-    std::memcpy(writer->getWritePointer(), output_buffer, sizeof(complex<float>) * fftSize);
-    this->reader->advance(everyNSamples);
-    this->writer->advance(fftSize);
 }
 
 void Fft::setEveryNSamples(unsigned int everyNSamples) {

@@ -64,16 +64,16 @@ void TimingRecovery::process() {
     if (error > max_error) error = max_error;
     if (error < -max_error) error = -max_error;
 
-    correction_offset = error * loop_gain * getErrorSign() * num_samples_halfbit;
+    correction_offset = (int) num_samples_halfbit * getErrorSign() * error * loop_gain;
 
     reader->advance(num_samples_bit + correction_offset);
 }
 
 float TimingRecovery::calculateError(int el_point_right_index, int el_point_left_index, int el_point_mid_index) {
     complex<float>* input = reader->getReadPointer();
-    float error = input[el_point_right_index].i() - input[el_point_left_index].i() * input[el_point_mid_index].i();
+    float error = (input[el_point_right_index].i() - input[el_point_left_index].i()) * input[el_point_mid_index].i();
     if (use_q) {
-        error = input[el_point_right_index].q() - input[el_point_left_index].q() * input[el_point_mid_index].q();
+        error = (input[el_point_right_index].q() - input[el_point_left_index].q()) * input[el_point_mid_index].q();
         error /= 2;
     }
     return error;

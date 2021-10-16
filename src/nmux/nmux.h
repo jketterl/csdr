@@ -2,14 +2,14 @@
 #include "shims.h"
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <getopt.h>
-#include <signal.h>
-#include <string.h>
+#include <csignal>
+#include <cstring>
 #include <unistd.h>
 #include <pthread.h>
-#include <errno.h>
+#include <cerrno>
 #include <fcntl.h>
 #include <poll.h>
 #include <arpa/inet.h>

@@ -20,5 +20,14 @@ Description: development dependencies includes for libcsdr
 Package: csdr
 Architecture: any
 Depends: libcsdr0 (=${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Recommends: nmux (=${binary:Version})
 Description: command-line sdr
  A simple DSP command-line tool for Software Defined Radio.
+
+Package: nmux
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: csdr (<= 0.18.0~133)
+Description: TCP stream multiplexer
+ It reads data from the standard input, and sends it to each client connected
+ through TCP sockets.

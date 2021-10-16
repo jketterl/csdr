@@ -48,10 +48,6 @@ set_target_properties(csdr-bin PROPERTIES OUTPUT_NAME csdr)
 target_link_libraries(csdr-bin csdr)
 install(TARGETS csdr-bin DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-add_executable(nmux nmux.cpp tsmpool.cpp)
-target_link_libraries(nmux ${CMAKE_THREAD_LIBS_INIT})
-install(TARGETS nmux DESTINATION ${CMAKE_INSTALL_BINDIR})
-
 if(FFTW3_FOUND)
     set(FFTW3F_REQUIRES "Requires: fftw3f")
 endif()
@@ -85,3 +81,4 @@ install(FILES
 
 add_subdirectory(lib)
 add_subdirectory(csdr++)
+add_subdirectory(nmux)
