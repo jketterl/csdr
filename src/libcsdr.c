@@ -1108,11 +1108,8 @@ void reduce_noise_fft_ff(fft_plan_t* plan, fft_plan_t* plan_inverse, int thresho
     unsigned char gate[plan_size];
     unsigned char gain[plan_size];
 
-    //calculate FFT on input buffer
-    fft_execute(plan);
-
-    complexf* in = plan->output;
-    complexf* out = plan_inverse->input;
+    //make sure window does not exceed half of the input size
+    window_size = window_size>plan_size/2? plan_size/2 : window_size;
 
     //make sure window does not exceed unsigned char resolution
     window_size = window_size<2? 2 : window_size>254? 254 : window_size;
@@ -1120,14 +1117,21 @@ void reduce_noise_fft_ff(fft_plan_t* plan, fft_plan_t* plan_inverse, int thresho
     //we are really interested in half-a-window
     window_size >>= 1;
 
+    //calculate FFT on input buffer
+    fft_execute(plan);
+
+    //input and output data streams
+    complexf* in = plan->output;
+    complexf* out = plan_inverse->input;
+
     //convert threshold from decibels to squared level
-    float t = powf(100.0f, (float)threshold / 10.0f);
+    float thr_level = powf(100.0f, (float)threshold / 10.0f);
 
     //calculate signal's squared level and compare it against threshold
     for(int i=0; i<plan_size; ++i)
     {
-        float d = iof(in,i)*iof(in,i) + qof(in,i)*qof(in,i);
-        gate[i] = d>t? 1:0;
+        float f = iof(in,i)*iof(in,i) + qof(in,i)*qof(in,i);
+        gate[i] = f>thr_level? 1:0;
     }
 
     //compute initial gain for the first entry
@@ -1160,15 +1164,17 @@ void reduce_noise_fft_ff(fft_plan_t* plan, fft_plan_t* plan_inverse, int thresho
 
     //add the overlap of the previous segment
     float* result = plan_inverse->output;
+    float step = 1.0f/overlap_size;
+    float blend = 0.0f;
 
-    for(int i=0;i<plan_size;i++)
+    for(int i=0; i<overlap_size; ++i, blend+=step)
     {
-        result[i]/=plan_size;
+        result[i] = (result[i]/plan_size)*blend + last_overlap[i]*(1.0f-blend);
     }
 
-    for(int i=0;i<overlap_size;i++)
+    for(int i=overlap_size; i<plan_size; ++i)
     {
-        result[i]+=last_overlap[i];
+        result[i]/=plan_size;
     }
 }
 #endif

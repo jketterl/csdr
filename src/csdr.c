@@ -2029,8 +2029,8 @@ int main(int argc, char *argv[])
 
         //calculate the FFT size and the other length parameters
         int fft_size=4096;
-        int input_size = fft_size/2;
-        int overlap_length = fft_size - input_size;
+        int overlap_length = fft_size/64;
+        int input_size = fft_size - overlap_length;
 
         if(!sendbufsize(getbufsize())) return -2;
 
