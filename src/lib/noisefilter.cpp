@@ -93,7 +93,8 @@ size_t NoiseFilter<T>::apply(T *input, T *output, size_t size)
 
     // Copy input but only partially fill FFT input
     auto* data = (complex<float>*) forwardInput;
-    for(size_t i=0; i<inputSize; ++i)
+    size_t dataSize = inputSize<size? inputSize : size;
+    for(size_t i=0; i<dataSize; ++i)
     {
       data[i] = input[i];
     }
