@@ -1104,7 +1104,9 @@ void apply_fir_fft_cc(fft_plan_t* plan, fft_plan_t* plan_inverse, complexf* taps
 #ifdef USE_FFTW
 void reduce_noise_fft_ff(fft_plan_t* plan, fft_plan_t* plan_inverse, int threshold, int window_size, float* last_overlap, int overlap_size)
 {
-    unsigned char gain[plan->size];
+    int plan_size = plan->size;
+    unsigned char gate[plan_size];
+    unsigned char gain[plan_size];
 
     //calculate FFT on input buffer
     fft_execute(plan);
@@ -1112,29 +1114,43 @@ void reduce_noise_fft_ff(fft_plan_t* plan, fft_plan_t* plan_inverse, int thresho
     complexf* in = plan->output;
     complexf* out = plan_inverse->input;
 
-    //convert decibels to level
-    float t = powf(10.0f, (float)threshold / 10.0f);
+    //make sure window does not exceed unsigned char resolution
+    window_size = window_size<2? 2 : window_size>254? 254 : window_size;
 
-    //calculate level and compare it against threshold
-    for(int i=0; i<plan->size; ++i)
+    //we are really interested in half-a-window
+    window_size >>= 1;
+
+    //convert threshold from decibels to squared level
+    float t = powf(100.0f, (float)threshold / 10.0f);
+
+    //calculate signal's squared level and compare it against threshold
+    for(int i=0; i<plan_size; ++i)
     {
         float d = iof(in,i)*iof(in,i) + qof(in,i)*qof(in,i);
-        gain[i] = d>t? 1:0;
+        gate[i] = d>t? 1:0;
+    }
+
+    //compute initial gain for the first entry
+    gain[0] = 0;
+    for(int i=0; i<window_size; ++i)
+    {
+        gain[0] += gate[i] + gate[plan_size - i - 1];
+    }
+
+    //incrementally compute gains by moving window over gates
+    int prev = plan_size - window_size;
+    int next = window_size;
+    for(int i=1; i<plan_size; ++i)
+    {
+        gain[i] = gain[i-1] + gate[next] - gate[prev];
+        if(++prev>=plan_size) prev = 0;
+        if(++next>=plan_size) next = 0;
     }
 
     //filter out frequencies falling below threshold
-    for(int i=0; i<plan->size; ++i)
+    for(int i=0; i<plan_size; ++i)
     {
-        int j = (i<window_size/2? plan->size:0) + i - window_size/2;
-        int n = 0;
-
-        for(int k=window_size; k>0; --k)
-        {
-            n += gain[j++];
-            if(j>=plan->size) j-=plan->size;
-        }
-
-        float f = (float)n/(float)window_size;
+        float f = (float)gain[i]/window_size;
         iof(out,i) = iof(in,i) * f;
         qof(out,i) = qof(in,i) * f;
     }
@@ -1145,9 +1161,9 @@ void reduce_noise_fft_ff(fft_plan_t* plan, fft_plan_t* plan_inverse, int thresho
     //add the overlap of the previous segment
     float* result = plan_inverse->output;
 
-    for(int i=0;i<plan->size;i++)
+    for(int i=0;i<plan_size;i++)
     {
-        result[i]/=plan->size;
+        result[i]/=plan_size;
     }
 
     for(int i=0;i<overlap_size;i++)
