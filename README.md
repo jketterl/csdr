@@ -424,6 +424,16 @@ This is a DC blocker that works based on the average of the buffer.
 
 ----
 
+### [reducenoise_fft_ff](#reducenoise_fft_ff)
+
+Syntax: 
+
+    csdr reducenoise_fft_ff [threshold_dB] [window_size]
+
+This is an audio noise reduction filter based on the spectral subtraction algorithm.
+
+----
+
 ### [fmdemod_atan_cf](#fmdemod_atan_cf)
 
 Syntax: 
