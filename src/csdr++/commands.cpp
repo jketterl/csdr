@@ -24,6 +24,7 @@ along with csdr++.  If not, see <https://www.gnu.org/licenses/>.
 #include "fmdemod.hpp"
 #include "amdemod.hpp"
 #include "dcblock.hpp"
+#include "noisefilter.hpp"
 #include "converter.hpp"
 #include "fft.hpp"
 #include "logpower.hpp"
@@ -201,6 +202,18 @@ AmdemodCommand::AmdemodCommand(): Command("amdemod", "AM demodulation") {
 DcBlockCommand::DcBlockCommand(): Command("dcblock", "DC block") {
     callback( [this] () {
         runModule(new DcBlock());
+    });
+}
+
+ReduceNoiseCommand::ReduceNoiseCommand(): Command("reducenoise", "Reduce noise") {
+    addFifoOption();
+    add_option("-f,--fft_size", fftSize, "Number of FFT bins");
+    add_option("-w,--wnd_size", wndSize, "Filter window size");
+    add_option("-t,--threshold", dBthreshold, "Suppression threshold in dB");
+    callback( [this] () {
+        auto filter = new AFNoiseFilter(dBthreshold, fftSize, wndSize);
+        module = new FilterModule<float>(filter);
+        runModule(module);
     });
 }
 

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with libcsdr.  If not, see <https://www.gnu.org/licenses/>.
 
-add_library(csdr++ SHARED module.cpp ringbuffer.cpp writer.cpp agc.cpp fmdemod.cpp amdemod.cpp dcblock.cpp converter.cpp fft.cpp window.cpp logpower.cpp logaveragepower.cpp fftexchangesides.cpp realpart.cpp shift.cpp firdecimate.cpp fir.cpp benchmark.cpp reader.cpp fractionaldecimator.cpp adpcm.cpp limit.cpp power.cpp deemphasis.cpp gain.cpp filter.cpp fftfilter.cpp dbpsk.cpp varicode.cpp timingrecovery.cpp async.cpp source.cpp sink.cpp audioresampler.cpp downmix.cpp version.cpp)
+add_library(csdr++ SHARED module.cpp ringbuffer.cpp writer.cpp agc.cpp fmdemod.cpp amdemod.cpp dcblock.cpp converter.cpp fft.cpp window.cpp logpower.cpp logaveragepower.cpp fftexchangesides.cpp realpart.cpp shift.cpp firdecimate.cpp fir.cpp benchmark.cpp reader.cpp fractionaldecimator.cpp adpcm.cpp limit.cpp power.cpp deemphasis.cpp gain.cpp filter.cpp fftfilter.cpp noisefilter.cpp dbpsk.cpp varicode.cpp timingrecovery.cpp async.cpp source.cpp sink.cpp audioresampler.cpp downmix.cpp version.cpp)
 set_target_properties(csdr++ PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 file(GLOB LIBCSDR_HEADERS "${PROJECT_SOURCE_DIR}/include/*.hpp")
 set_target_properties(csdr++ PROPERTIES PUBLIC_HEADER "${LIBCSDR_HEADERS}")

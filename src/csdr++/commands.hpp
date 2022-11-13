@@ -70,6 +70,15 @@ namespace Csdr {
             DcBlockCommand();
     };
 
+    class ReduceNoiseCommand: public Command {
+        public:
+            ReduceNoiseCommand();
+            unsigned int fftSize = 4096;
+            unsigned int wndSize = 32;
+            int dBthreshold = 10;
+            FilterModule<float>* module;
+    };
+
     class ConvertCommand: public Command {
         public:
             ConvertCommand();
