@@ -234,6 +234,7 @@ int log2n(int x);
 int next_pow2(int x);
 #ifdef USE_FFTW
 void apply_fir_fft_cc(fft_plan_t* plan, fft_plan_t* plan_inverse, complexf* taps_fft, complexf* last_overlap, int overlap_size);
+void reduce_noise_fft_ff(fft_plan_t* plan, fft_plan_t* plan_inverse, int threshold, int window_size, float* last_overlap, int overlap_size);
 #endif
 void gain_ff(float* input, float* output, int input_size, float gain);
 float get_power_f(float* input, int input_size, int decimation);

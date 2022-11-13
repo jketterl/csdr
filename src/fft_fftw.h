@@ -22,6 +22,7 @@ typedef struct fft_plan_s
 
 fft_plan_t* make_fft_c2c(int size, complexf* input, complexf* output, int forward, int benchmark);
 fft_plan_t* make_fft_r2c(int size, float* input, complexf* output, int benchmark);
+fft_plan_t* make_fft_c2r(int size, complexf* input, float* output, int benchmark);
 void fft_execute(fft_plan_t* plan);
 void fft_destroy(fft_plan_t* plan);
 

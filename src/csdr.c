@@ -2013,17 +2013,17 @@ int main(int argc, char *argv[])
 #ifdef USE_FFTW
     if(!strcmp(argv[1],"reduce_noise_fft_ff")) //this command does not exist as a separate function
     {
-        float threshold = 10.0;
+        int threshold = 10;
         int window_width = 32;
         int fd;
 
         if(fd=init_fifo(argc,argv))
         {
-            while(!read_fifo_ctl(fd,"%g %u\n",&threshold,&window_width)) usleep(10000);
+            while(!read_fifo_ctl(fd,"%d %u\n",&threshold,&window_width)) usleep(10000);
         }
         else
         {
-            if(argc>2) sscanf(argv[2],"%g",&threshold);
+            if(argc>2) sscanf(argv[2],"%d",&threshold);
             if(argc>3) sscanf(argv[3],"%u",&window_width);
         }
 
@@ -2035,20 +2035,20 @@ int main(int argc, char *argv[])
         if(!sendbufsize(getbufsize())) return -2;
 
         //make FFT plans for continously processing the input
-        complexf* input = fft_malloc(fft_size*sizeof(float));
+        float* input = fft_malloc(fft_size*sizeof(float));
         complexf* input_fourier = fft_malloc(fft_size*sizeof(complexf));
-        fft_plan_t* plan_forward = make_fft_r2c(fft_size, input, input_fourier, 1, 1); //forward, do benchmark
+        fft_plan_t* plan_forward = make_fft_r2c(fft_size, input, input_fourier, 1); //forward, do benchmark
 
         complexf* output_fourier = fft_malloc(fft_size*sizeof(complexf));
-        complexf* output_1 = fft_malloc(fft_size*sizeof(float));
-        complexf* output_2 = fft_malloc(fft_size*sizeof(float));
+        float* output_1 = fft_malloc(fft_size*sizeof(float));
+        float* output_2 = fft_malloc(fft_size*sizeof(float));
 
         //we create 2x output buffers so that one will preserve the previous overlap:
-        fft_plan_t* plan_inverse_1 = make_fft_c2r(fft_size, output_fourier, output_1, 0, 1); //inverse, do benchmark
-        fft_plan_t* plan_inverse_2 = make_fft_c2r(fft_size, output_fourier, output_2, 0, 1);
+        fft_plan_t* plan_inverse_1 = make_fft_c2r(fft_size, output_fourier, output_1, 1); //inverse, do benchmark
+        fft_plan_t* plan_inverse_2 = make_fft_c2r(fft_size, output_fourier, output_2, 1);
 
         //we initialize this buffer to 0 as it will be taken as the overlap source for the first time:
-        for(int i=0;i<fft_size;i++) plan_inverse_2->output[i]=0.0f;
+        for(int i=0;i<fft_size;i++) output_2[i]=0.0f;
 
         //we pre-pad the input buffer with zeros
         for(int i=input_size;i<fft_size;i++) input[i]=0.0f;
@@ -2066,7 +2066,7 @@ int main(int argc, char *argv[])
                 reduce_noise_fft_ff (plan_forward, plan_inverse, threshold, window_width, last_overlap, overlap_length);
 
                 fwrite(plan_inverse->output, sizeof(float), input_size, stdout);
-                if(read_fifo_ctl(fd,"%g %u\n",&threshold,&window_width)) break;
+                if(read_fifo_ctl(fd,"%d %u\n",&threshold,&window_width)) break;
                 TRY_YIELD;
             }
         }

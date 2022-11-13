@@ -1102,7 +1102,7 @@ void apply_fir_fft_cc(fft_plan_t* plan, fft_plan_t* plan_inverse, complexf* taps
 #endif
 
 #ifdef USE_FFTW
-void reduce_noise_fft_ff(fft_plan_t* plan, fft_plan_t* plan_inverse, float threshold, int window_size, float* last_overlap, int overlap_size)
+void reduce_noise_fft_ff(fft_plan_t* plan, fft_plan_t* plan_inverse, int threshold, int window_size, float* last_overlap, int overlap_size)
 {
     unsigned char gain[plan->size];
 
@@ -1112,12 +1112,14 @@ void reduce_noise_fft_ff(fft_plan_t* plan, fft_plan_t* plan_inverse, float thres
     complexf* in = plan->output;
     complexf* out = plan_inverse->input;
 
+    //convert decibels to level
+    float t = powf(10.0f, (float)threshold / 10.0f);
+
     //calculate level and compare it against threshold
     for(int i=0; i<plan->size; ++i)
     {
         float d = iof(in,i)*iof(in,i) + qof(in,i)*qof(in,i);
-        d = 10.0f * log10f(d + 1.0E-60f);
-        gain[i] = d>threshold? 1:0;
+        gain[i] = d>t? 1:0;
     }
 
     //filter out frequencies falling below threshold
@@ -1125,14 +1127,14 @@ void reduce_noise_fft_ff(fft_plan_t* plan, fft_plan_t* plan_inverse, float thres
     {
         int j = (i<window_size/2? plan->size:0) + i - window_size/2;
         int n = 0;
-   
+
         for(int k=window_size; k>0; --k)
         {
             n += gain[j++];
             if(j>=plan->size) j-=plan->size;
         }
 
-        double f = (double)n/(double)WND_SIZE;
+        float f = (float)n/(float)window_size;
         iof(out,i) = iof(in,i) * f;
         qof(out,i) = qof(in,i) * f;
     }
