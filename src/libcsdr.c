@@ -1154,7 +1154,7 @@ void reduce_noise_fft_ff(fft_plan_t* plan, fft_plan_t* plan_inverse, int thresho
     //filter out frequencies falling below threshold
     for(int i=0; i<plan_size; ++i)
     {
-        float f = (float)gain[i]/window_size;
+        float f = (float)gain[i]/(window_size*2);
         iof(out,i) = iof(in,i) * f;
         qof(out,i) = qof(in,i) * f;
     }
@@ -1164,12 +1164,11 @@ void reduce_noise_fft_ff(fft_plan_t* plan, fft_plan_t* plan_inverse, int thresho
 
     //add the overlap of the previous segment
     float* result = plan_inverse->output;
-    float step = 1.0f/overlap_size;
-    float blend = 0.0f;
 
-    for(int i=0; i<overlap_size; ++i, blend+=step)
+    for(int i=0; i<overlap_size; ++i)
     {
-        result[i] = (result[i]/plan_size)*blend + last_overlap[i]*(1.0f-blend);
+        float f = (float)i/overlap_size;
+        result[i] = (result[i]/plan_size)*f + last_overlap[i]*(1.0f-f);
     }
 
     for(int i=overlap_size; i<plan_size; ++i)

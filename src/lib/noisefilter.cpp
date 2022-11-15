@@ -135,7 +135,7 @@ size_t NoiseFilter<T>::apply(T *input, T *output, size_t size)
     // Filter out frequencies falling below threshold
     for(size_t i=0; i<fftSize; ++i)
     {
-        out[i] = in[i] * ((float)gain[i]/wndSize);
+        out[i] = in[i] * ((float)gain[i]/(wndSize*2));
     }
 
     // Calculate inverse FFT on the filtered buffer
@@ -144,13 +144,12 @@ size_t NoiseFilter<T>::apply(T *input, T *output, size_t size)
     // Add the overlap of the previous segment
     auto result = (complex<float>*) inverseOutput;
     auto overlap = (complex<float>*) overlapBuf;
-    float step = 1.0f/ovrSize;
-    float blend = 0.0f;
 
     // Blend with the overlap
-    for(size_t i=0; i<ovrSize; ++i, blend+=step)
+    for(size_t i=0; i<ovrSize; ++i)
     {
-        result[i] = (result[i]/(float)fftSize)*blend + overlap[i]*(1.0f-blend);
+        float f = (float)i/ovrSize;
+        result[i] = (result[i]/(float)fftSize)*f + overlap[i]*(1.0f-f);
     }
 
     // Normalize the rest
