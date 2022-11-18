@@ -107,22 +107,22 @@ size_t NoiseFilter<T>::apply(T *input, T *output, size_t size)
 
     unsigned char gate[fftSize];
     unsigned char gain[fftSize];
+    double level[fftSize];
 
     // Calculate signal's overall squared power
     double power = 0.0;
     for(size_t i=0; i<fftSize; ++i)
     {
-        power += in[i].i()*in[i].i() + in[i].q()*in[i].q();
+        power += level[i] = in[i].i()*in[i].i() + in[i].q()*in[i].q();
     }
 
     // Calculate the effective threshold to compare against
-    power = (power / fftSize) * pow(100.0, (double)dBthreshold / 10.0);
+    power = (power / fftSize) * pow(10.0, (double)dBthreshold / 10.0);
 
-    // Calculate signal's squared level and compare it against threshold
+    // Compare signal's squared level against threshold
     for(size_t i=0; i<fftSize; ++i)
     {
-        double f = in[i].i()*in[i].i() + in[i].q()*in[i].q();
-        gate[i] = f>power? 1:0;
+        gate[i] = level[i]>power? 1:0;
     }
 
     // Compute initial gain for the first entry
