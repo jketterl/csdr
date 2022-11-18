@@ -1124,14 +1124,21 @@ void reduce_noise_fft_ff(fft_plan_t* plan, fft_plan_t* plan_inverse, int thresho
     complexf* in = plan->output;
     complexf* out = plan_inverse->input;
 
-    //convert threshold from decibels to squared level
-    float thr_level = powf(100.0f, (float)threshold / 10.0f);
+    //calculate signal's total squared power
+    double power = 0.0;
+    for(int i=0; i<plan_size; ++i)
+    {
+        power += iof(in,i)*iof(in,i) + qof(in,i)*qof(in,i);
+    }
+
+    //calculate squared level to compare against
+    power = (power / plan_size) / pow(100.0, (double)threshold / 10.0);
 
     //calculate signal's squared level and compare it against threshold
     for(int i=0; i<plan_size; ++i)
     {
-        float f = iof(in,i)*iof(in,i) + qof(in,i)*qof(in,i);
-        gate[i] = f>thr_level? 1:0;
+        double f = iof(in,i)*iof(in,i) + qof(in,i)*qof(in,i);
+        gate[i] = f>power? 1:0;
     }
 
     //compute initial gain for the first entry

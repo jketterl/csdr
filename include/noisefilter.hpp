@@ -37,7 +37,7 @@ namespace Csdr {
             size_t fftSize;
             size_t wndSize;   // Actually, half-a-window
             size_t ovrSize;   // Usually 1/32th of fftSize
-            float threshold;  // Squared threshold level
+            int dBthreshold;  // Filtering threshold in dB
         private:
             fftwf_complex* forwardInput;
             fftwf_complex* forwardOutput;
@@ -50,7 +50,7 @@ namespace Csdr {
 
     class AFNoiseFilter: public NoiseFilter<float> {
         public:
-            AFNoiseFilter(int dBthreshold = 10, size_t fftSize = 4096, size_t wndSize = 32):
+            AFNoiseFilter(int dBthreshold = 0, size_t fftSize = 4096, size_t wndSize = 32):
                 NoiseFilter<float>(dBthreshold, fftSize, wndSize) {}
     };
 }

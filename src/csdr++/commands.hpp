@@ -75,7 +75,7 @@ namespace Csdr {
             ReduceNoiseCommand();
             unsigned int fftSize = 4096;
             unsigned int wndSize = 32;
-            int dBthreshold = 10;
+            int dBthreshold = 0;
             FilterModule<float>* module;
     };
 

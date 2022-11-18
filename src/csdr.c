@@ -2013,7 +2013,7 @@ int main(int argc, char *argv[])
 #ifdef USE_FFTW
     if(!strcmp(argv[1],"reduce_noise_fft_ff")) //this command does not exist as a separate function
     {
-        int threshold = 10;
+        int threshold = 0;
         int window_width = 32;
         int fd;
 
