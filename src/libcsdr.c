@@ -1107,6 +1107,7 @@ void reduce_noise_fft_ff(fft_plan_t* plan, fft_plan_t* plan_inverse, int thresho
     int plan_size = plan->size;
     unsigned char gate[plan_size];
     unsigned char gain[plan_size];
+    double level[plan_size];
 
     //make sure window does not exceed half of the input size
     window_size = window_size>plan_size/2? plan_size/2 : window_size;
@@ -1128,17 +1129,16 @@ void reduce_noise_fft_ff(fft_plan_t* plan, fft_plan_t* plan_inverse, int thresho
     double power = 0.0;
     for(int i=0; i<plan_size; ++i)
     {
-        power += iof(in,i)*iof(in,i) + qof(in,i)*qof(in,i);
+        power += level[i] = iof(in,i)*iof(in,i) + qof(in,i)*qof(in,i);
     }
 
     //calculate squared level to compare against
-    power = (power / plan_size) / pow(100.0, (double)threshold / 10.0);
+    power = (power / plan_size) * pow(10.0, (double)threshold / 10.0);
 
     //calculate signal's squared level and compare it against threshold
     for(int i=0; i<plan_size; ++i)
     {
-        double f = iof(in,i)*iof(in,i) + qof(in,i)*qof(in,i);
-        gate[i] = f>power? 1:0;
+        gate[i] = level[i]>power? 1:0;
     }
 
     //compute initial gain for the first entry
