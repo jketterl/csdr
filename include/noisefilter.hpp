@@ -46,6 +46,7 @@ namespace Csdr {
             fftwf_complex* inverseOutput;
             fftwf_plan inversePlan;
             fftwf_complex* overlapBuf;
+            double lastPower;
     };
 
     class AFNoiseFilter: public NoiseFilter<float> {

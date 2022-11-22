@@ -51,7 +51,8 @@ NoiseFilter<T>::NoiseFilter(int dBthreshold, size_t fftSize, size_t wndSize):
     forwardPlan(fftwf_plan_dft_1d(fftSize, forwardInput, forwardOutput, FFTW_FORWARD, CSDR_FFTW_FLAGS)),
     inverseInput(fftwf_alloc_complex(fftSize)),
     inverseOutput(fftwf_alloc_complex(fftSize)),
-    inversePlan(fftwf_plan_dft_1d(fftSize, inverseInput, inverseOutput, FFTW_BACKWARD, CSDR_FFTW_FLAGS))
+    inversePlan(fftwf_plan_dft_1d(fftSize, inverseInput, inverseOutput, FFTW_BACKWARD, CSDR_FFTW_FLAGS)),
+    lastPower(0.0)
 {
     // Come up with a reasonable overlap size
     ovrSize = fftSize>=64? (fftSize>>6) : 1;
@@ -116,8 +117,11 @@ size_t NoiseFilter<T>::apply(T *input, T *output, size_t size)
         power += level[i] = in[i].i()*in[i].i() + in[i].q()*in[i].q();
     }
 
+    power /= fftSize;
+    lastPower = power = (power + lastPower) / 2.0;
+
     // Calculate the effective threshold to compare against
-    power = (power / fftSize) * pow(10.0, (double)dBthreshold / 10.0);
+    power *= pow(10.0, (double)dBthreshold / 10.0);
 
     // Compare signal's squared level against threshold
     for(size_t i=0; i<fftSize; ++i)
