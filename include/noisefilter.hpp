@@ -33,12 +33,19 @@ namespace Csdr {
             ~NoiseFilter() override;
             size_t apply(T* input, T* output, size_t size) override;
             size_t getMinProcessingSize() override { return fftSize-ovrSize; }
+
         protected:
             size_t fftSize;
             size_t wndSize;   // Actually, half-a-window
             size_t ovrSize;   // Usually 1/32th of fftSize
             int dBthreshold;  // Filtering threshold in dB
+
         private:
+            static const int MAX_HISTORY = 16;
+            double histPower[MAX_HISTORY];
+            double lastPower;
+            int histPtr;
+
             fftwf_complex* forwardInput;
             fftwf_complex* forwardOutput;
             fftwf_plan forwardPlan;
@@ -46,7 +53,6 @@ namespace Csdr {
             fftwf_complex* inverseOutput;
             fftwf_plan inversePlan;
             fftwf_complex* overlapBuf;
-            double lastPower;
     };
 
     class AFNoiseFilter: public NoiseFilter<float> {

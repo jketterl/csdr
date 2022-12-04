@@ -52,7 +52,8 @@ NoiseFilter<T>::NoiseFilter(int dBthreshold, size_t fftSize, size_t wndSize):
     inverseInput(fftwf_alloc_complex(fftSize)),
     inverseOutput(fftwf_alloc_complex(fftSize)),
     inversePlan(fftwf_plan_dft_1d(fftSize, inverseInput, inverseOutput, FFTW_BACKWARD, CSDR_FFTW_FLAGS)),
-    lastPower(0.0)
+    lastPower(0.0),
+    histPtr(0)
 {
     // Come up with a reasonable overlap size
     ovrSize = fftSize>=64? (fftSize>>6) : 1;
@@ -72,7 +73,13 @@ NoiseFilter<T>::NoiseFilter(int dBthreshold, size_t fftSize, size_t wndSize):
     {
         forwardInput[i][0] = 0.0f;
         forwardInput[i][1] = 0.0f;
-    };
+    }
+
+    // No history yet
+    for(size_t i = 0; i < MAX_HISTORY; i++)
+    {
+        histPower[i] = 0.0;
+    }
 }
 
 template<typename T>
@@ -117,8 +124,12 @@ size_t NoiseFilter<T>::apply(T *input, T *output, size_t size)
         power += level[i] = in[i].i()*in[i].i() + in[i].q()*in[i].q();
     }
 
+    // Keep track of the average signal power per FFT bucket
     power /= fftSize;
-    lastPower = power = (power + lastPower) / 2.0;
+    lastPower += power - histPower[histPtr];
+    histPower[histPtr] = power;
+    histPtr = histPtr<MAX_HISTORY-1? histPtr+1 : 0;
+    power = lastPower/MAX_HISTORY;
 
     // Calculate the effective threshold to compare against
     power *= pow(10.0, (double)dBthreshold / 10.0);
