@@ -41,7 +41,7 @@ namespace Csdr {
             int dBthreshold;  // Filtering threshold in dB
 
         private:
-            static const int MAX_HISTORY = 16;
+            static const int MAX_HISTORY = 8;
             double histPower[MAX_HISTORY];
             double lastPower;
             int histPtr;
